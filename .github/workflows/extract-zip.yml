@@ -15,21 +15,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract project ZIP
+      - name: Find and extract ZIP
         shell: bash
         run: |
           set -e
 
-          ZIP=$(find . -maxdepth 1 -type f \
+          echo "Searching for project ZIP..."
+
+          find . -type f -iname '*.zip' -print
+
+          ZIP=$(find . -type f \
             -iname 'FakeGPSPro-GitHub-Paths-Clean*.zip' \
-            | head -n 1)
+            -print -quit)
 
           if [ -z "$ZIP" ]; then
-            echo "Project ZIP not found!"
+            echo "Expected ZIP not found."
             exit 1
           fi
 
           mkdir -p "$RUNNER_TEMP/project"
+
           unzip -q "$ZIP" -d "$RUNNER_TEMP/project"
 
           rsync -a "$RUNNER_TEMP/project/" ./
@@ -44,6 +49,6 @@ jobs:
           git add -A
 
           if ! git diff --cached --quiet; then
-            git commit -m "Organize FakeGPSPro project structure"
+            git commit -m "Organize FakeGPSPro project"
             git push
           fi
